@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mini Game Hub - Casino Royale</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    
+    <!-- HUB VIEW -->
+    <div id="hub-view" class="view-container active">
+        <header class="hub-header">
+            <h1 class="logo">MiniGame<span>Hub</span></h1>
+            <p class="subtitle">Pilih permainan kasual untuk memulai!</p>
+        </header>
+
+        <main class="hub-games-grid">
+            <!-- Game Card: Domino -->
+            <div class="game-card" onclick="hubManager.openGame('domino')">
+                <div class="game-card-icon">🁣</div>
+                <h3>Domino Cuy</h3>
+                <p>Mainkan Block Domino 1v1 atau 4-Pemain lokal.</p>
+            </div>
+
+            <!-- Game Card: Tic Tac Toe -->
+            <div class="game-card" onclick="hubManager.openGame('tictactoe')">
+                <div class="game-card-icon">❌⭕</div>
+                <h3>Tic Tac Toe</h3>
+                <p>Adu taktik melawan AI atau teman di papan 3x3.</p>
+            </div>
+
+            <!-- Game Card: Sudoku -->
+            <div class="game-card" onclick="hubManager.openGame('sudoku')">
+                <div class="game-card-icon">🔢</div>
+                <h3>Sudoku</h3>
+                <p>Uji logika Anda dengan teka-teki angka klasik 9x9.</p>
+            </div>
+
+            <!-- Game Card: Block Blast -->
+            <div class="game-card" onclick="hubManager.openGame('blockblast')">
+                <div class="game-card-icon">🧱</div>
+                <h3>Block Blast</h3>
+                <p>Susun blok bergaya Tetris dan raih skor tertinggi.</p>
+            </div>
+
+            <!-- Game Card: Memory Match -->
+            <div class="game-card" onclick="hubManager.openGame('memory')">
+                <div class="game-card-icon">🎴</div>
+                <h3>Memory Match</h3>
+                <p>Latih ingatan Anda dengan mencocokkan pasangan kartu.</p>
+            </div>
+            
+            <!-- Game Card: Snake -->
+            <div class="game-card" onclick="hubManager.openGame('snake')">
+                <div class="game-card-icon">🐍</div>
+                <h3>Snake Classic</h3>
+                <p>Pandu ular memakan apel tanpa menabrak dinding.</p>
+            </div>
+        </main>
+    </div>
+
+    <!-- GLOBAL GAME UI (Navbar) -->
+    <nav id="game-navbar" class="hidden">
+        <button id="btn-back-hub" class="btn-nav" onclick="hubManager.openHub()">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg> 
+            Kembali ke Hub
+        </button>
+        <h2 id="active-game-title" class="game-nav-title">Nama Game</h2>
+        <div style="width: 140px; display: flex; justify-content: flex-end;">
+            <button id="btn-toggle-music" class="btn primary-btn" style="padding: 5px 10px; font-size: 0.8rem; background: rgba(30, 41, 59, 0.8);" onclick="toggleMusic()">Music: OFF</button>
+        </div>
+    </nav>
+
+    <!-- DOMINO GAME VIEW -->
+    <div id="game-domino" class="view-container">
+        <div id="app">
+            <!-- Top Player -->
+            <div id="player-2-container" class="opponent-hand top hidden">
+                <div class="player-info-small">
+                    <div class="name-container">
+                        <svg class="profile-icon" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                        <span id="p2-name" class="name">Player 2</span>
+                    </div>
+                    <span id="p2-count" class="count">7 Kartu</span>
+                </div>
+                <div id="p2-cards" class="mini-cards horizontal"></div>
+            </div>
+
+            <div class="middle-section">
+                <!-- Left Player -->
+                <div id="player-1-container" class="opponent-hand left hidden">
+                    <div class="player-info-small">
+                        <div class="name-container">
+                            <svg class="profile-icon" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                            <span id="p1-name" class="name">Player 1</span>
+                        </div>
+                        <span id="p1-count" class="count">7 Kartu</span>
+                    </div>
+                    <div id="p1-cards" class="mini-cards vertical"></div>
+                </div>
+
+                <!-- Main Board -->
+                <main id="board-container">
+                    <div id="shuffle-area" class="hidden">
+                        <div id="deck-pile"></div>
+                    </div>
+                    <div id="board" class="board"></div>
+                </main>
+
+                <!-- Right Player -->
+                <div id="player-3-container" class="opponent-hand right hidden">
+                    <div class="player-info-small">
+                        <div class="name-container">
+                            <svg class="profile-icon" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                            <span id="p3-name" class="name">Player 3</span>
+                        </div>
+                        <span id="p3-count" class="count">7 Kartu</span>
+                    </div>
+                    <div id="p3-cards" class="mini-cards vertical"></div>
+                </div>
+            </div>
+
+            <!-- Bottom Player (Active Hand) -->
+            <footer id="player-0-container">
+                <div class="player-info">
+                    <span class="turn-indicator" id="turn-indicator">Tunggu Giliran...</span>
+                    
+                    <div class="timer-container" id="timer-container">
+                        <div class="timer-bar" id="timer-bar"></div>
+                        <span class="timer-text" id="timer-text">15s</span>
+                    </div>
+
+                    <span class="status-text">
+                        <svg class="profile-icon" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                        <strong id="p0-name">Player 1</strong> | Sisa: <strong id="p0-count">7</strong>
+                    </span>
+                    <button id="btn-pass" class="btn hidden">Pass (Lewat)</button>
+                </div>
+                <div id="player-hand" class="hand"></div>
+            </footer>
+        </div>
+
+        <!-- Domino Main Menu Modal -->
+        <div id="menu-modal" class="modal">
+            <div class="modal-content glass-panel">
+                <h1 class="logo">Domino<span>Casino</span></h1>
+                <p class="subtitle">Mainkan Block Domino 4-Pemain!</p>
+                
+                <div class="menu-group">
+                    <label>Mode Permainan:</label>
+                    <select id="mode-select" class="input-select">
+                        <option value="bot">1 Pemain vs 3 Bot</option>
+                        <option value="multiplayer">4 Pemain (Bareng Teman)</option>
+                    </select>
+                </div>
+
+                <div class="menu-group" id="difficulty-group">
+                    <label>Level AI Bot:</label>
+                    <select id="diff-select" class="input-select">
+                        <option value="easy">Easy (Acak)</option>
+                        <option value="medium" selected>Medium</option>
+                        <option value="hard">Hard (Tahan Balak)</option>
+                        <option value="champion">Champion (Strategi Blokir)</option>
+                    </select>
+                </div>
+
+                <button id="btn-start" class="btn primary-btn">Mulai Permainan</button>
+            </div>
+        </div>
+
+        <!-- Domino Game Over Modal -->
+        <div id="gameover-modal" class="modal hidden">
+            <div class="modal-content glass-panel">
+                <h1 id="gameover-title" style="color: #ffd700;">Selesai!</h1>
+                <p id="gameover-message"></p>
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button id="btn-restart" class="btn primary-btn">Main Lagi</button>
+                    <button onclick="hubManager.openHub()" class="btn btn-secondary">Keluar Game</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TIC TAC TOE GAME VIEW -->
+    <div id="game-tictactoe" class="view-container">
+        <div class="ttt-container">
+            <div class="ttt-header">
+                <h2>Tic Tac Toe</h2>
+                <div class="ttt-menu">
+                    <select id="ttt-mode" class="input-select" style="width: auto;">
+                        <option value="pve">Lawan AI</option>
+                        <option value="pvp">Lawan Teman</option>
+                    </select>
+                    <button id="ttt-start-btn" class="btn primary-btn" style="width: auto; padding: 10px 15px;">Mulai Baru</button>
+                </div>
+                <div id="ttt-status" class="ttt-status">Giliran: X</div>
+            </div>
+            
+            <div class="ttt-board" id="ttt-board">
+                <div class="ttt-cell" data-index="0"></div>
+                <div class="ttt-cell" data-index="1"></div>
+                <div class="ttt-cell" data-index="2"></div>
+                <div class="ttt-cell" data-index="3"></div>
+                <div class="ttt-cell" data-index="4"></div>
+                <div class="ttt-cell" data-index="5"></div>
+                <div class="ttt-cell" data-index="6"></div>
+                <div class="ttt-cell" data-index="7"></div>
+                <div class="ttt-cell" data-index="8"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- BLOCK BLAST GAME VIEW -->
+    <div id="game-blockblast" class="view-container">
+        <div class="bb-container">
+            <div class="bb-header">
+                <h2>Block Blast</h2>
+                <div class="bb-score-panel">
+                    <div class="score-box">
+                        <span class="score-label">SKOR</span>
+                        <span class="score-value" id="bb-score">0</span>
+                    </div>
+                    <div class="score-box">
+                        <span class="score-label">TERBAIK</span>
+                        <span class="score-value" id="bb-highscore">0</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bb-main">
+                <div class="bb-board" id="bb-board">
+                    <!-- 8x8 Grid will be generated by JS -->
+                </div>
+            </div>
+            
+            <div class="bb-shapes-container" id="bb-shapes">
+                <!-- 3 Shapes to place will be generated here -->
+            </div>
+            
+            <!-- Block Blast Game Over Overlay -->
+            <div id="bb-gameover" class="modal hidden" style="position: absolute;">
+                <div class="modal-content glass-panel" style="min-width: 300px; padding: 2rem;">
+                    <h1 style="color: #ef4444; margin-top:0;">Game Over!</h1>
+                    <p>Skor Anda: <span id="bb-final-score" style="font-size:1.5rem; font-weight:bold; color:var(--accent);">0</span></p>
+                    <button id="bb-restart-btn" class="btn primary-btn" style="margin-top: 15px;">Main Lagi</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SUDOKU GAME VIEW -->
+    <div id="game-sudoku" class="view-container">
+        <div class="sudoku-container">
+            <div class="sudoku-header">
+                <h2>Sudoku</h2>
+                <div class="sudoku-menu">
+                    <select id="sudoku-diff" class="input-select" style="width: auto;">
+                        <option value="easy">Mudah</option>
+                        <option value="medium">Sedang</option>
+                        <option value="hard">Sulit</option>
+                    </select>
+                    <button id="sudoku-start-btn" class="btn primary-btn" style="width: auto; padding: 10px 15px;">Mulai Baru</button>
+                </div>
+            </div>
+            
+            <div class="sudoku-board" id="sudoku-board">
+                <!-- 9x9 Grid will be generated by JS -->
+            </div>
+            
+            <div class="sudoku-numpad" id="sudoku-numpad">
+                <button class="numpad-btn" data-val="1">1</button>
+                <button class="numpad-btn" data-val="2">2</button>
+                <button class="numpad-btn" data-val="3">3</button>
+                <button class="numpad-btn" data-val="4">4</button>
+                <button class="numpad-btn" data-val="5">5</button>
+                <button class="numpad-btn" data-val="6">6</button>
+                <button class="numpad-btn" data-val="7">7</button>
+                <button class="numpad-btn" data-val="8">8</button>
+                <button class="numpad-btn" data-val="9">9</button>
+                <button class="numpad-btn erase" data-val="0">Hapus</button>
+            </div>
+            
+            <div id="sudoku-gameover" class="modal hidden" style="position: absolute;">
+                <div class="modal-content glass-panel" style="min-width: 300px; padding: 2rem;">
+                    <h1 style="color: #10b981; margin-top:0;">Luar Biasa!</h1>
+                    <p>Anda berhasil menyelesaikan Sudoku!</p>
+                    <button onclick="document.getElementById('sudoku-start-btn').click()" class="btn primary-btn" style="margin-top: 15px;">Main Lagi</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MEMORY MATCH GAME VIEW -->
+    <div id="game-memory" class="view-container">
+        <div class="memory-container">
+            <div class="memory-header">
+                <h2>Memory Match</h2>
+                <div class="memory-stats">
+                    <span class="score-box"><span class="score-label">Gerakan</span><span id="memory-moves" class="score-value">0</span></span>
+                    <button id="memory-start-btn" class="btn primary-btn" style="padding: 10px 15px; margin-left:15px;">Ulangi</button>
+                </div>
+            </div>
+            <div class="memory-board" id="memory-board">
+                <!-- Cards generated by JS -->
+            </div>
+            <div id="memory-gameover" class="modal hidden" style="position: absolute;">
+                <div class="modal-content glass-panel">
+                    <h1 style="color: #10b981; margin-top:0;">Hebat!</h1>
+                    <p>Selesai dalam <span id="memory-final-moves"></span> gerakan!</p>
+                    <button onclick="document.getElementById('memory-start-btn').click()" class="btn primary-btn" style="margin-top: 15px;">Main Lagi</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SNAKE GAME VIEW -->
+    <div id="game-snake" class="view-container">
+        <div class="snake-container">
+            <div class="snake-header">
+                <h2>Snake</h2>
+                <div class="snake-stats">
+                    <span class="score-box"><span class="score-label">Skor</span><span id="snake-score" class="score-value">0</span></span>
+                    <span class="score-box"><span class="score-label">Terbaik</span><span id="snake-highscore" class="score-value">0</span></span>
+                </div>
+            </div>
+            <div class="snake-board-wrapper">
+                <canvas id="snake-canvas" width="400" height="400"></canvas>
+                <div id="snake-overlay" class="snake-overlay">
+                    <h3 id="snake-msg">Tekan Mulai / Layar</h3>
+                    <button id="snake-start-btn" class="btn primary-btn">Mulai</button>
+                </div>
+            </div>
+            <div class="snake-controls">
+                <!-- For Mobile -->
+                <p style="color: #cbd5e1; font-size: 0.9rem; margin-top:10px;">Gunakan Panah Keyboard atau Geser (Swipe) di Layar</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="audio.js"></script>
+    <script>
+        function toggleMusic() {
+            if (!window.AudioSys) return;
+            window.AudioSys.toggleBGM();
+            const btn = document.getElementById('btn-toggle-music');
+            if (window.AudioSys.isPlayingBGM) {
+                btn.textContent = 'Music: ON';
+                btn.style.color = '#10b981'; // Green
+            } else {
+                btn.textContent = 'Music: OFF';
+                btn.style.color = 'white';
+            }
+        }
+    </script>
+    <script src="domino.js"></script>
+    <script src="game.js"></script>
+    
+    <!-- Hub Router Script -->
+    <script>
+        const hubManager = {
+            activeGame: null,
+            openHub: function() {
+                // Hide all views
+                document.querySelectorAll('.view-container').forEach(el => {
+                    el.classList.remove('active');
+                });
+                document.getElementById('game-navbar').classList.add('hidden');
+                
+                // Show hub
+                document.getElementById('hub-view').classList.add('active');
+                this.activeGame = null;
+                
+                // Optional: Stop active games logic here if needed
+                if (window.dominoApp) window.dominoApp.reset();
+            },
+            openGame: function(gameId) {
+                document.querySelectorAll('.view-container').forEach(el => {
+                    el.classList.remove('active');
+                });
+                
+                // Show specific game
+                document.getElementById(`game-${gameId}`).classList.add('active');
+                
+                // Show and update navbar
+                document.getElementById('game-navbar').classList.remove('hidden');
+                
+                if (gameId === 'domino') {
+                    document.getElementById('active-game-title').textContent = 'Domino Casino';
+                    if (window.dominoApp) window.dominoApp.showMenu();
+                } else if (gameId === 'tictactoe') {
+                    document.getElementById('active-game-title').textContent = 'Tic Tac Toe';
+                    if (window.tttApp) window.tttApp.init();
+                } else if (gameId === 'blockblast') {
+                    document.getElementById('active-game-title').textContent = 'Block Blast';
+                    if (window.bbApp) window.bbApp.init();
+                } else if (gameId === 'sudoku') {
+                    document.getElementById('active-game-title').textContent = 'Sudoku';
+                    if (window.sudokuApp) window.sudokuApp.init();
+                } else if (gameId === 'memory') {
+                    document.getElementById('active-game-title').textContent = 'Memory Match';
+                    if (window.memoryApp) window.memoryApp.init();
+                } else if (gameId === 'snake') {
+                    document.getElementById('active-game-title').textContent = 'Snake';
+                    if (window.snakeApp) window.snakeApp.init();
+                }
+                
+                this.activeGame = gameId;
+            }
+        };
+    </script>
+
+    <script src="main.js"></script>
+    <script src="tictactoe.js"></script>
+    <script src="blockblast.js"></script>
+    <script src="sudoku.js"></script>
+    <script src="memory.js"></script>
+    <script src="snake.js"></script>
+</body>
+</html>
